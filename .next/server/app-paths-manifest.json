@@ -1,5 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/truecaller/getPhoneDetails/route": "app/api/truecaller/getPhoneDetails/route.js"
-}
