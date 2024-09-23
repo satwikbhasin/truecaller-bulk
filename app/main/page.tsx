@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from 'react';
 import { Input } from '@nextui-org/input';
 import { Button } from '@nextui-org/button';
@@ -23,7 +25,7 @@ export default function Main() {
         setSecretKey(event.target.value);
     };
 
-    const handleRegionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleRegionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedRegion(event.target.value);
     };
 
@@ -54,7 +56,7 @@ export default function Main() {
                 label="Region"
                 value={selectedRegion}
                 isRequired
-                onChange={handleRegionChange}
+                onChange={(e) => handleRegionChange(e as React.ChangeEvent<HTMLSelectElement>)}
                 disabled={processingSubmission}
                 defaultSelectedKeys={["IN"]}
             >

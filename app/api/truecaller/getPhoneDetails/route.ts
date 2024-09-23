@@ -2,12 +2,6 @@ import { convertCSVtoJSON } from "@/services/convertCSVtoJSON";
 import { NextResponse } from "next/server";
 import fetch from "node-fetch";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -23,11 +17,9 @@ export async function POST(request: Request) {
 
     const entries = await convertCSVtoJSON(file);
 
-    let results = [];
-
     const limitedEntries = entries.slice(0, 20);
 
-    for (const entry of limitedEntries) {
+    const fetchPromises = limitedEntries.map((entry) => {
       const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${entry.phone}`;
       const options = {
         method: "GET",
@@ -37,26 +29,28 @@ export async function POST(request: Request) {
         },
       };
 
-      try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
+      return fetch(url, options)
+        .then((response) => {
+          if (!response.ok) {
+            console.error(
+              `Failed to fetch details for phone number: ${entry.phone}`
+            );
+            throw new Error(
+              `Failed to fetch details for phone number: ${entry.phone}`
+            );
+          }
+          return response.json();
+        })
+        .catch((error) => {
           console.error(
-            `Failed to fetch details for phone number: ${entry.phone}`
+            `Error fetching details for phone number: ${entry.phone}`,
+            error
           );
-          throw new Error(
-            `Failed to fetch details for phone number: ${entry.phone}`
-          );
-        }
-        const result = await response.json();
-        results.push(result);
-      } catch (error) {
-        console.error(
-          `Error fetching details for phone number: ${entry.phone}`,
-          error
-        );
-        throw error;
-      }
-    }
+          throw error;
+        });
+    });
+
+    const results = await Promise.all(fetchPromises);
 
     return NextResponse.json(results, { status: 200 });
   } catch (error: any) {
