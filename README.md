@@ -1,53 +1,26 @@
-# Next.js & NextUI Template
+# Truecaller Bulk
 
-This is a template for creating applications using Next.js 14 (app directory) and NextUI (v2).
+Truecaller Bulk is a web application that allows users to look up multiple phone numbers on Truecaller in one go. This project leverages the Truecaller API to fetch details for phone numbers provided in a CSV file and generates a PDF report with the results.
 
-[Try it on CodeSandbox](https://githubbox.com/nextui-org/next-app-template)
+Try it [here](https://truecaller-bulk.vercel.app)
 
-## Technologies Used
+You can get an API key from RapidAPI [here](https://rapidapi.com/DataCrawler/api/truecaller4). Please note that the API is rate-limited to 20 requests per minute which means your csv file should not contain more than 20 phone numbers.
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [NextUI v2](https://nextui.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+## Features
 
-## How to Use
+- Upload a CSV file containing phone numbers.
+- Fetch details for each phone number using the Truecaller API.
+- Generate a PDF report with the fetched details.
+- Supports different regions and secret keys for API access.
 
-### Use the template with create-next-app
+## Tech Stack
 
-To create a new project based on this template using `create-next-app`, run the following command:
-
-```bash
-npx create-next-app -e https://github.com/nextui-org/next-app-template
-```
-
-### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
-
-```bash
-npm install
-```
-
-### Run the development server
-
-```bash
-npm run dev
-```
-
-### Setup pnpm (optional)
-
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@nextui-org/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
-## License
-
-Licensed under the [MIT license](https://github.com/nextui-org/next-app-template/blob/main/LICENSE).
+- **Framework**: [Next.js](https://nextjs.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [NextUI](https://nextui.org/)
+- **PDF Generation**: [jsPDF](https://github.com/parallax/jsPDF), [pdf-lib](https://github.com/Hopding/pdf-lib), [pdfmake](https://github.com/bpampuch/pdfmake)
+- **CSV Parsing**: [csv-parser](https://github.com/mafintosh/csv-parser)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **State Management**: [React](https://reactjs.org/)
+- **Theming**: [next-themes](https://github.com/pacocoursey/next-themes)
+- **HTTP Requests**: [node-fetch](https://github.com/node-fetch/node-fetch)
