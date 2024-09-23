@@ -26,7 +26,6 @@ export const processSubmission = async (
       if (jsonData.length === 0) {
         throw new Error("No data found");
       }
-      console.log("JSON Data:", jsonData);
       await generatePDF(jsonData);
     } catch (error) {
       console.error("Error processing CSV:", error);
