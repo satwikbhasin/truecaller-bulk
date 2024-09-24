@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const phones = result.phones;
     const limitExceeded = result.limitExceeded;
 
-    const fetchPromises = phones.map(async (phone) => {
+    const fetchPhoneDetails = async (phone: string) => {
       const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${phone}`;
       const options = {
         method: "GET",
@@ -36,10 +36,34 @@ export async function POST(request: Request) {
           statusCode: response.status,
         };
       }
-      return await response.json();
-    });
 
-    const results = await Promise.all(fetchPromises);
+      const data = await response.json();
+      if (typeof data === "object" && data !== null) {
+        return { ...data, phone };
+      } else {
+        throw {
+          message: `Unexpected response format for phone number: ${phone}`,
+          statusCode: 500,
+        };
+      }
+    };
+
+    const results = [];
+
+    for (const phone of phones) {
+      try {
+        const result = await fetchPhoneDetails(phone);
+        results.push(result);
+      } catch (error: any) {
+        if (error.statusCode === 403) {
+          return NextResponse.json(
+            { message: error.message },
+            { status: error.statusCode }
+          );
+        }
+        console.error(`Error processing phone number ${phone}:`, error.message);
+      }
+    }
 
     return NextResponse.json({ results, limitExceeded }, { status: 200 });
   } catch (error: any) {
