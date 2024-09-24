@@ -17,7 +17,31 @@ export async function POST(request: Request) {
     const phones = result.phones;
     const limitExceeded = result.limitExceeded;
 
-    const fetchPhoneDetails = async (phone: string) => {
+    const firstPhone = phones[0];
+    const testUrl = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${firstPhone}`;
+    const testOptions = {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": `${secretKey}`,
+        "x-rapidapi-host": "truecaller4.p.rapidapi.com",
+      },
+    };
+
+    const testResponse = await fetch(testUrl, testOptions);
+    if (!testResponse.ok) {
+      if (testResponse.status === 403) {
+        return NextResponse.json(
+          { message: "Invalid Secret Key" },
+          { status: 403 }
+        );
+      }
+      return NextResponse.json(
+        { message: `Failed to fetch details for phone number: ${firstPhone}` },
+        { status: testResponse.status }
+      );
+    }
+
+    const fetchPromises = phones.slice(1).map(async (phone) => {
       const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${phone}`;
       const options = {
         method: "GET",
@@ -28,9 +52,6 @@ export async function POST(request: Request) {
       };
       const response = await fetch(url, options);
       if (!response.ok) {
-        if (response.status === 403) {
-          throw { message: "Invalid Secret Key", statusCode: 403 };
-        }
         throw {
           message: `Failed to fetch details for phone number: ${phone}`,
           statusCode: response.status,
@@ -46,23 +67,18 @@ export async function POST(request: Request) {
           statusCode: 500,
         };
       }
-    };
+    });
 
-    const results = [];
+    const results = await Promise.all(fetchPromises);
 
-    for (const phone of phones) {
-      try {
-        const result = await fetchPhoneDetails(phone);
-        results.push(result);
-      } catch (error: any) {
-        if (error.statusCode === 403) {
-          return NextResponse.json(
-            { message: error.message },
-            { status: error.statusCode }
-          );
-        }
-        console.error(`Error processing phone number ${phone}:`, error.message);
-      }
+    const firstData = await testResponse.json();
+    if (typeof firstData === "object" && firstData !== null) {
+      results.unshift({ ...firstData, phone: firstPhone });
+    } else {
+      throw {
+        message: "Unexpected response format for the first phone number",
+        statusCode: 500,
+      };
     }
 
     return NextResponse.json({ results, limitExceeded }, { status: 200 });
