@@ -10,54 +10,43 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { message: "No file uploaded" },
-        { status: 400 }
-      );
+      throw { message: "No file uploaded", statusCode: 400 };
     }
 
-    let phones: string[] = [];
-    let limitExceeded = false;
+    const result = await processCSV(file);
+    const phones = result.phones;
+    const limitExceeded = result.limitExceeded;
 
-    try {
-      const result = await processCSV(file);
-      phones = result.phones;
-      limitExceeded = result.limitExceeded;
-    } catch (csvError: any) {
-      return NextResponse.json({ message: csvError.message }, { status: 400 });
-    }
-
-    let results;
-    try {
-      const fetchPromises = phones.map(async (phone) => {
-        const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${phone}`;
-        const options = {
-          method: "GET",
-          headers: {
-            "x-rapidapi-key": `${secretKey}`,
-            "x-rapidapi-host": "truecaller4.p.rapidapi.com",
-          },
-        };
-        const response = await fetch(url, options);
-        if (!response.ok) {
-          if (response.status === 403) {
-            throw new Error("Invalid Secret Key");
-          }
-          throw new Error(`Failed to fetch details for phone number: ${phone}`);
+    const fetchPromises = phones.map(async (phone) => {
+      const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${phone}`;
+      const options = {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": `${secretKey}`,
+          "x-rapidapi-host": "truecaller4.p.rapidapi.com",
+        },
+      };
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw { message: "Invalid Secret Key", statusCode: 403 };
         }
-        return await response.json();
-      });
+        throw {
+          message: `Failed to fetch details for phone number: ${phone}`,
+          statusCode: response.status,
+        };
+      }
+      return await response.json();
+    });
 
-      results = await Promise.all(fetchPromises);
-    } catch (requestError: any) {
-      return NextResponse.json(
-        { message: requestError.message },
-        { status: 400 }
-      );
-    }
+    const results = await Promise.all(fetchPromises);
 
     return NextResponse.json({ results, limitExceeded }, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    const statusCode = error.statusCode || 500;
+    return NextResponse.json(
+      { message: error.message },
+      { status: statusCode }
+    );
   }
 }
