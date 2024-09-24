@@ -69,6 +69,7 @@ export default function Main() {
             <Input
                 type="file"
                 label="Upload Phone numbers in CSV"
+                accept='.csv'
                 isRequired
                 style={{ fontWeight: 200 }}
                 onChange={handleFileChange}
