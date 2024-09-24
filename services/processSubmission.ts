@@ -16,19 +16,16 @@ export const processSubmission = async (
         Region: selectedRegion,
       },
     });
+
     const jsonData = await response.json();
 
     if (!response.ok) {
-      if (response.status != 200) {
-        throw new Error(jsonData.message);
-      } else {
-        throw new Error("Failed to process CSV");
-      }
+      throw new Error(jsonData.message || "Failed to process CSV");
     }
 
     await generatePDF(jsonData.results);
     return jsonData.limitExceeded;
   } else {
-    console.error("No file selected");
+    throw new Error("No file selected");
   }
 };
