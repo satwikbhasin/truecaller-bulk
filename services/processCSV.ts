@@ -24,8 +24,21 @@ export default function processCSV(file: File): Promise<ProcessCSVResult> {
         stream.push(Buffer.from(buffer));
         stream.push(null);
 
+        let headersChecked = false;
+
         const csvStream = csv()
+          .on("headers", (headers) => {
+            if (!headers.includes("phone")) {
+              reject(new Error("CSV file must have 'phone' as the header"));
+              stream.unpipe(csvStream);
+            }
+            headersChecked = true;
+          })
           .on("data", (data) => {
+            if (!headersChecked) {
+              reject(new Error("CSV file must have 'phone' as the header"));
+              stream.unpipe(csvStream);
+            }
             if (results.length < API_RATE_LIMIT) {
               if (data.phone) {
                 results.push(data.phone.trim());
@@ -39,7 +52,9 @@ export default function processCSV(file: File): Promise<ProcessCSVResult> {
             }
           })
           .on("end", () => {
-            if (!limitExceeded) {
+            if (results.length === 0) {
+              reject(new Error("No phone numbers found in the file"));
+            } else if (!limitExceeded) {
               resolve({ phones: results, limitExceeded });
             }
           })

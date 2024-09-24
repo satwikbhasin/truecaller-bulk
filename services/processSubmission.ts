@@ -19,7 +19,7 @@ export const processSubmission = async (
     const jsonData = await response.json();
 
     if (!response.ok) {
-      if (response.status === 400) {
+      if (response.status != 200) {
         throw new Error(jsonData.message);
       } else {
         throw new Error("Failed to process CSV");
