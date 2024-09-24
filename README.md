@@ -24,3 +24,16 @@ You can get an API key from RapidAPI [here](https://rapidapi.com/DataCrawler/api
 - **State Management**: [React](https://reactjs.org/)
 - **Theming**: [next-themes](https://github.com/pacocoursey/next-themes)
 - **HTTP Requests**: [node-fetch](https://github.com/node-fetch/node-fetch)
+
+## Instructions
+
+1. **Upload a CSV File**: Select your CSV file containing phone numbers to upload. Ensure your CSV file follows the format shown below:
+  <img src="public/assets/csv_example_git.png" alt="Upload CSV" width="200"/>
+
+2. **Select Region**: Choose the region for the phone numbers from the dropdown menu.
+
+4. **Enter Secret Key**: Provide your secret key for API access.
+
+5. **Submit**: Click on the "Submit" button to process the phone numbers.
+
+6. **Download PDF Report**: Once the processing is complete, open the downloaded PDF report.
