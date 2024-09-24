@@ -2,3 +2,4 @@
 .next
 test.csv
 apikey.txt
+.env

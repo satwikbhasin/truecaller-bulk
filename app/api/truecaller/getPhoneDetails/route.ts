@@ -1,4 +1,4 @@
-import { convertCSVtoJSON } from "@/services/convertCSVtoJSON";
+import processCSV from "@/services/processCSV";
 import { NextResponse } from "next/server";
 import fetch from "node-fetch";
 
@@ -8,6 +8,7 @@ export async function POST(request: Request) {
     const secretKey = request.headers.get("Authorization");
     const region = request.headers.get("Region");
     const file = formData.get("file") as File;
+
     if (!file) {
       return NextResponse.json(
         { message: "No file uploaded" },
@@ -15,12 +16,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const entries = await convertCSVtoJSON(file);
+    const { phones, limitExceeded } = await processCSV(file);
 
-    const limitedEntries = entries.slice(0, 20);
+    if (phones.length === 0) {
+      return NextResponse.json(
+        { message: "No phone numbers found in the file" },
+        { status: 400 }
+      );
+    }
 
-    const fetchPromises = limitedEntries.map((entry) => {
-      const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${entry.phone}`;
+    console.log(`Processing ${phones.length} phone numbers`);
+    console.log(`processing phone numbers: ${phones}`);
+
+    const fetchPromises = phones.map(async (phone) => {
+      const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${phone}`;
       const options = {
         method: "GET",
         headers: {
@@ -28,33 +37,25 @@ export async function POST(request: Request) {
           "x-rapidapi-host": "truecaller4.p.rapidapi.com",
         },
       };
-
-      return fetch(url, options)
-        .then((response) => {
-          if (!response.ok) {
-            console.error(
-              `Failed to fetch details for phone number: ${entry.phone}`
-            );
-            throw new Error(
-              `Failed to fetch details for phone number: ${entry.phone}`
-            );
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          console.error(
-            `Error fetching details for phone number: ${entry.phone}`,
-            error
-          );
-          throw error;
-        });
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+          console.error(`Failed to fetch details for phone number: ${phone}`);
+          throw new Error(`Failed to fetch details for phone number: ${phone}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error(
+          `Error fetching details for phone number: ${phone}`,
+          error
+        );
+        throw error;
+      }
     });
 
     const results = await Promise.all(fetchPromises);
-
-    return NextResponse.json(results, { status: 200 });
+    return NextResponse.json({ results, limitExceeded }, { status: 200 });
   } catch (error: any) {
-    console.error("Error occurred:", error.message);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

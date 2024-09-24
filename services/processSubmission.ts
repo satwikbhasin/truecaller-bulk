@@ -8,28 +8,26 @@ export const processSubmission = async (
   if (selectedFile) {
     const formData = new FormData();
     formData.append("file", selectedFile);
-    try {
-      const response = await fetch("api/truecaller/getPhoneDetails", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `${secretKey}`,
-          Region: selectedRegion,
-        },
-      });
+    const response = await fetch("api/truecaller/getPhoneDetails", {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `${secretKey}`,
+        Region: selectedRegion,
+      },
+    });
+    const jsonData = await response.json();
 
-      if (!response.ok) {
+    if (!response.ok) {
+      if (response.status === 400) {
+        throw new Error(jsonData.message);
+      } else {
         throw new Error("Failed to process CSV");
       }
-
-      const jsonData = await response.json();
-      if (jsonData.length === 0) {
-        throw new Error("No data found");
-      }
-      await generatePDF(jsonData);
-    } catch (error) {
-      console.error("Error processing CSV:", error);
     }
+
+    await generatePDF(jsonData.results);
+    return jsonData.limitExceeded;
   } else {
     console.error("No file selected");
   }
