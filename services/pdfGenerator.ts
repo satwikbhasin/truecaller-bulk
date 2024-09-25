@@ -15,7 +15,10 @@ const createTable = (item: any) => {
           [
             { text: "Name", style: "normal" },
             {
-              text: item.status ? item.data[0].name : "Unknown",
+              text:
+                item.status && item.data[0].name
+                  ? item.data[0].name
+                  : "Unknown",
               style: "bold",
             },
           ],
