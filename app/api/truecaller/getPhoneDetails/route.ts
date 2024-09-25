@@ -32,7 +32,10 @@ export async function POST(request: Request) {
         const response = await fetch(url, options);
         if (!response.ok) {
           if (response.status === 403) {
-            throw { message: "Invalid Secret Key", statusCode: 403 };
+            return NextResponse.json(
+              { message: "Invalid Secret Key" },
+              { status: 403 }
+            );
           }
           throw {
             message: `Failed to fetch details for phone number: ${phone}`,
