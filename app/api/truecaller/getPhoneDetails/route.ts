@@ -111,7 +111,6 @@ export async function POST(request: Request) {
     console.log("All phone details fetched");
 
     console.log("Final results:", results);
-    console.log("Data:", results[0].data);
     return NextResponse.json({ results, limitExceeded }, { status: 200 });
   } catch (error: any) {
     const statusCode = error.statusCode || 500;
