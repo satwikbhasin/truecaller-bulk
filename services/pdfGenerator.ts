@@ -72,7 +72,7 @@ const splitIntoPages = (data: any, limit: any) => {
 
 export const generatePDF = async (results: any) => {
   try {
-    const pages = splitIntoPages(results, 8);
+    const pages = splitIntoPages(results, 16);
 
     const docDefinition = {
       content: [
