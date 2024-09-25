@@ -6,6 +6,7 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const createTable = (item: any) => {
   try {
+    console.log("Creating table for item:", item);
     return {
       table: {
         headerRows: 1,
@@ -27,11 +28,13 @@ const createTable = (item: any) => {
       layout: "fullBorders",
     };
   } catch (error: any) {
+    console.error("Error creating table:", error);
     throw new Error("Error creating table:", error);
   }
 };
 
 const splitIntoPages = (data: any, limit: any) => {
+  console.log("Splitting data into pages with limit:", limit);
   const pages = [];
   let currentPage: any = [];
 
@@ -40,6 +43,8 @@ const splitIntoPages = (data: any, limit: any) => {
     try {
       const firstData = data[i];
       const secondData = data[i + 1];
+
+      console.log("Processing data pair:", { firstData, secondData });
 
       groups.push({
         columns: [
@@ -50,6 +55,7 @@ const splitIntoPages = (data: any, limit: any) => {
         margin: [0, 15],
       });
     } catch (error: any) {
+      console.error("Error splitting data into pages:", error);
       throw new Error("Error splitting data into pages:", error);
     }
 
@@ -67,11 +73,13 @@ const splitIntoPages = (data: any, limit: any) => {
     pages.push(currentPage);
   }
 
+  console.log("Pages created:", pages);
   return pages;
 };
 
 export const generatePDF = async (results: any) => {
   try {
+    console.log("Generating PDF with results:", results);
     const pages = splitIntoPages(results, 4);
 
     const docDefinition = {
@@ -120,11 +128,15 @@ export const generatePDF = async (results: any) => {
       },
     };
 
+    console.log("Document definition created:", docDefinition);
+
     const pdfDocGenerator = pdfMake.createPdf(docDefinition);
     pdfDocGenerator.getBlob((blob: any) => {
+      console.log("PDF generated, saving as results.pdf");
       saveAs(blob, "results.pdf");
     });
   } catch (error: any) {
+    console.error("Error generating PDF:", error);
     throw new Error("Error generating PDF:", error);
   }
 };
