@@ -5,9 +5,21 @@ export const processSubmission = async (
   secretKey: string,
   selectedRegion: string
 ) => {
-  if (selectedFile) {
+  try {
+    console.log("Starting processSubmission");
+
+    if (!selectedFile) {
+      console.error("No file selected");
+      throw new Error("No file selected");
+    }
+
+    console.log("File selected:", selectedFile.name);
+
     const formData = new FormData();
     formData.append("file", selectedFile);
+    console.log("Form data created");
+
+    console.log("Sending POST request to api/truecaller/getPhoneDetails");
     const response = await fetch("api/truecaller/getPhoneDetails", {
       method: "POST",
       body: formData,
@@ -17,15 +29,23 @@ export const processSubmission = async (
       },
     });
 
+    console.log("Response received:", response.status);
+
     const jsonData = await response.json();
+    console.log("Response JSON data:", jsonData);
 
     if (!response.ok) {
+      console.error("Failed to process CSV:", jsonData.message);
       throw new Error(jsonData.message || "Failed to process CSV");
     }
 
+    console.log("Generating PDF with results");
     await generatePDF(jsonData.results);
+    console.log("PDF generated");
+
     return jsonData.limitExceeded;
-  } else {
-    throw new Error("No file selected");
+  } catch (error: any) {
+    console.error("Error in processSubmission:", error.message);
+    throw error;
   }
 };
