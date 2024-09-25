@@ -20,7 +20,6 @@ export async function POST(request: Request) {
     const phones = result.phones;
     const limitExceeded = result.limitExceeded;
 
-    // Limit the number of entries to 20
     const limitedPhones = phones.slice(0, 20);
 
     const fetchPhoneDetails = async (phone: string) => {
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
             { status: 403 }
           );
         }
-        throw new Error(`Failed to fetch details for phone number: ${phone}`);
+        throw new Error(`Invalid Secret Key`);
       }
       const data = await response.json();
       if (typeof data !== "object" || data === null) {
@@ -51,7 +50,6 @@ export async function POST(request: Request) {
       return { ...data, phone };
     };
 
-    // Use Promise.all for concurrent processing
     const fetchPromises = limitedPhones.map((phone) =>
       fetchPhoneDetails(phone)
     );
