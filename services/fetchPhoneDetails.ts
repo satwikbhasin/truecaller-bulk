@@ -6,7 +6,12 @@ export const fetchPhoneDetails = async (
   secretKey: string,
   region: string
 ) => {
-  const url = `https://truecaller4.p.rapidapi.com/api/v1/getDetails?countryCode=${region}&phone=${phone}`;
+  const apiUrl = process.env.TRUECALLER_API_URL;
+  if (!apiUrl) {
+    throw new CustomError("Missing API URL", 500);
+  }
+  
+  const url = `${apiUrl}?countryCode=${region}&phone=${phone}`;
   const options = {
     method: "GET",
     headers: {
@@ -14,6 +19,7 @@ export const fetchPhoneDetails = async (
       "x-rapidapi-host": "truecaller4.p.rapidapi.com",
     },
   };
+
   const response = await fetch(url, options);
 
   if (response.status === 403) {
