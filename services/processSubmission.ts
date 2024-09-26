@@ -1,35 +1,25 @@
+// src/services/processSubmission.ts
 import { generatePDF } from "@/services/pdfGenerator";
+import { fetchPhoneDetails } from "@/services/apiClient";
 
 export const processSubmission = async (
   selectedFile: File | null,
   secretKey: string,
   selectedRegion: string
-) => {
-  if (selectedFile) {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    const response = await fetch("api/truecaller/getPhoneDetails", {
-      method: "POST",
-      body: formData,
-      headers: {
-        Authorization: `${secretKey}`,
-        Region: selectedRegion,
-      },
-    });
+): Promise<boolean> => {
+  if (!selectedFile) {
+    throw new Error("No file selected");
+  }
 
-    const jsonData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        response.status === 403 || 429
-          ? jsonData.message
-          : "Failed to do bulk search"
-      );
-    }
-    
+  try {
+    const jsonData = await fetchPhoneDetails(
+      selectedFile,
+      secretKey,
+      selectedRegion
+    );
     await generatePDF(jsonData.results);
     return jsonData.limitExceeded;
-  } else {
-    throw new Error("No file selected");
+  } catch (error: any) {
+    throw new Error(error.message || "An unexpected error occurred");
   }
 };

@@ -1,5 +1,6 @@
 import csv from "csv-parser";
 import { Readable } from "stream";
+import { CustomError } from "@/services/CustomError";
 
 interface ProcessCSVResult {
   phones: string[];
@@ -24,27 +25,18 @@ export default function processCSV(file: File): Promise<ProcessCSVResult> {
         stream.push(Buffer.from(buffer));
         stream.push(null);
 
-        let headersChecked = false;
-
         const csvStream = csv()
           .on("headers", (headers) => {
             if (!headers.includes("phone")) {
-              reject(new Error("CSV file must have 'phone' as the header"));
+              reject(
+                new CustomError("CSV file must have a 'phone' header", 400)
+              );
               stream.unpipe(csvStream);
             }
-            headersChecked = true;
           })
           .on("data", (data) => {
-            if (!headersChecked) {
-              reject(new Error("CSV file must have 'phone' as the header"));
-              stream.unpipe(csvStream);
-            }
-            if (results.length < API_RATE_LIMIT) {
-              if (data.phone) {
-                results.push(data.phone.trim());
-              } else {
-                console.warn("No phone field in the data row:", data);
-              }
+            if (results.length < API_RATE_LIMIT && data.phone) {
+              results.push(data.phone.trim());
             } else {
               limitExceeded = true;
               stream.unpipe(csvStream);
@@ -53,7 +45,9 @@ export default function processCSV(file: File): Promise<ProcessCSVResult> {
           })
           .on("end", () => {
             if (results.length === 0) {
-              reject(new Error("No phone numbers found in the file"));
+              reject(
+                new CustomError("No phone numbers found in the file", 400)
+              );
             } else if (!limitExceeded) {
               resolve({ phones: results, limitExceeded });
             }

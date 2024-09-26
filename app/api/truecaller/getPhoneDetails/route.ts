@@ -35,11 +35,33 @@ export async function POST(request: Request) {
     const phones = result.phones;
     const limitExceeded = result.limitExceeded;
 
-    const fetchPromises = phones.map((phone) =>
-      fetchPhoneDetails(phone, secretKey, region)
-    );
+    if (phones.length === 0) {
+      return NextResponse.json(
+        { message: "No phone numbers found in the file" },
+        { status: 400 }
+      );
+    }
 
-    const results = await Promise.all(fetchPromises);
+    let firstResult;
+    try {
+      firstResult = await fetchPhoneDetails(phones[0], secretKey, region);
+    } catch (error: any) {
+      if (error instanceof CustomError && error.statusCode === 403) {
+        return NextResponse.json(
+          { message: "Invalid Secret Key" },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
+
+    const fetchPromises = phones
+      .slice(1)
+      .map((phone) => fetchPhoneDetails(phone, secretKey, region));
+
+    const remainingResults = await Promise.all(fetchPromises);
+
+    const results = [firstResult, ...remainingResults];
 
     return NextResponse.json({ results, limitExceeded }, { status: 200 });
   } catch (error: any) {
