@@ -65,13 +65,15 @@ export default function Main() {
     };
 
     return (
-        <div className="mt-8 flex flex-col gap-4 w-full sm:w-4/5 md:w-3/5 lg:w-1/2">
+        <div className="mt-8 flex flex-col w-full sm:w-4/5 md:w-3/5 lg:w-1/2" style={{
+            gap: 20
+        }}>
             <Input
                 type="file"
                 label="Upload Phone numbers in CSV"
                 accept='.csv'
                 isRequired
-                style={{ fontWeight: 200 }}
+                style={{ fontWeight: 250 }}
                 onChange={handleFileChange}
                 disabled={processingSubmission}
                 ref={fileInputRef}
@@ -129,6 +131,7 @@ export default function Main() {
             />
             <Select
                 label="Region"
+                labelPlacement='inside'
                 value={selectedRegion}
                 isRequired
                 onChange={(e) => handleRegionChange(e as React.ChangeEvent<HTMLSelectElement>)}
@@ -143,12 +146,14 @@ export default function Main() {
             <div>
                 <Input
                     type={showSecretKey ? 'text' : 'password'}
-                    label="Enter Secret Key"
+                    label="Secret Key"
+                    labelPlacement="outside"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                     }}
                     isRequired
+                    placeholder='Enter Secret Key'
                     disabled={processingSubmission}
                     value={secretKey}
                     onChange={handleSecretKeyChange}
@@ -171,6 +176,33 @@ export default function Main() {
                             >
                                 {showSecretKey ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
+                            <Tooltip delay={0} closeDelay={0} content={
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '1rem',
+                                    padding: '1rem',
+                                }}>
+                                    <h4 style={{
+                                        fontWeight: 600,
+                                    }}>Secret/API Key</h4>
+                                    <p style={{
+                                        fontWeight: 400,
+                                    }}>You can get your API Key here: </p>
+                                    <a href='https://rapidapi.com/DataCrawler/api/truecaller4/pricing' target='_blank' rel="noopener noreferrer"
+                                        style={{ color: '#F31260' }}>
+                                        https://rapidapi.com/DataCrawler/api/truecaller4/pricing
+                                    </a>
+                                </div>
+                            } placement="bottom">
+                                <button
+                                    style={{
+                                        padding: '0.5rem',
+                                    }}
+                                >
+                                    <Info size={20} />
+                                </button>
+                            </Tooltip>
                         </>
                     }
                 />
