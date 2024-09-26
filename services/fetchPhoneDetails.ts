@@ -20,6 +20,8 @@ export const fetchPhoneDetails = async (
     },
   };
 
+  console.log("URL: ", url);
+
   const response = await fetch(url, options);
 
   if (response.status === 403) {
