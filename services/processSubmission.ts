@@ -20,9 +20,13 @@ export const processSubmission = async (
     const jsonData = await response.json();
 
     if (!response.ok) {
-      throw new Error(jsonData.message || "Failed to do bulk search");
+      throw new Error(
+        response.status === 403 || 429
+          ? jsonData.message
+          : "Failed to do bulk search"
+      );
     }
-
+    
     await generatePDF(jsonData.results);
     return jsonData.limitExceeded;
   } else {
